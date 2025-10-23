@@ -38,10 +38,10 @@ jobs:
       
       - name: Slack Notification - Success
         if: success()
-        uses: slackapi/slack-github-action@v1.28.0
-        with:
-          payload: |
-            {
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-type: application/json' \
+            -d '{
               "text": "✅ BizBox 지출결의 데이터 수집 완료",
               "blocks": [
                 {
@@ -52,28 +52,22 @@ jobs:
                   }
                 }
               ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+            }'
       
       - name: Slack Notification - Failure
         if: failure()
-        uses: slackapi/slack-github-action@v1.28.0
-        with:
-          payload: |
-            {
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+            -H 'Content-type: application/json' \
+            -d '{
               "text": "❌ BizBox 지출결의 데이터 수집 실패",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*❌ BizBox 지출결의 데이터 수집 실패*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                    "text": "*❌ BizBox 지출결의 데이터 수집 실패*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
                   }
                 }
               ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+            }'
