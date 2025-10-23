@@ -89,14 +89,52 @@ class BizBoxPlaywright:
 
     def get_disbursement_data(self, page):
         """지출결의 데이터 수집"""
-        print("Navigating to disbursement page...")
+        print("Switching to ADMIN mode...")
         
         try:
-            # 지출결의 페이지로 이동
-            page.goto(
-                f"{self.host}/exp/ex/admin/report/ExApprovalSlipList.do?menu_no=810101500",
-                timeout=60000
-            )
+            # 1. 관리자 모드로 전환
+            try:
+                page.click('#btnAdmin', timeout=5000)
+                print("✓ Switched to ADMIN mode")
+                page.wait_for_timeout(2000)
+            except Exception as e:
+                print(f"Warning: Failed to switch to ADMIN mode: {e}")
+            
+            # 2. 회계 버튼 클릭
+            print("Navigating to accounting menu...")
+            try:
+                # 회계 메뉴 찾기 (텍스트로)
+                page.click('div:has-text("회계")', timeout=5000)
+                print("✓ Clicked accounting menu")
+                page.wait_for_timeout(2000)
+            except:
+                print("Attempting alternative selector for accounting menu...")
+                # 다른 방식으로 시도
+                accounting_divs = page.query_selector_all('div')
+                for div in accounting_divs:
+                    if '회계' in div.text_content():
+                        div.click()
+                        print("✓ Found and clicked accounting menu by text")
+                        page.wait_for_timeout(2000)
+                        break
+            
+            # 3. 지출결의 상세현황 클릭
+            print("Navigating to disbursement details...")
+            try:
+                page.click('#810101500_anchor', timeout=5000)
+                print("✓ Clicked disbursement details menu")
+                page.wait_for_timeout(3000)
+            except Exception as e:
+                print(f"Warning: Could not click disbursement menu: {e}")
+            
+            # 4. 상세검색 토글 펼치기
+            print("Opening advanced search...")
+            try:
+                page.click('#all_menu_btn', timeout=5000)
+                print("✓ Opened advanced search")
+                page.wait_for_timeout(2000)
+            except Exception as e:
+                print(f"Warning: Could not open advanced search: {e}")
             
             print("Waiting for table to load...")
             page.wait_for_timeout(2000)
@@ -137,10 +175,14 @@ class BizBoxPlaywright:
                 
             except Exception as e:
                 print(f"Error extracting table data: {e}")
+                import traceback
+                traceback.print_exc()
                 return []
         
         except Exception as e:
-            print(f"Error navigating to disbursement page: {e}")
+            print(f"Error in get_disbursement_data: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def save_to_sheets(self, data):
