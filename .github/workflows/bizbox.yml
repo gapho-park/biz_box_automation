@@ -24,8 +24,10 @@ jobs:
           pip install -r requirements.txt
       
       - name: Set up Google Cloud credentials
+        env:
+          GOOGLE_CLOUD_KEY: ${{ secrets.GOOGLE_CLOUD_KEY }}
         run: |
-          echo "${{ secrets.GOOGLE_CLOUD_KEY }}" > ${{ runner.temp }}/gcloud-key.json
+          echo "$GOOGLE_CLOUD_KEY" > ${{ runner.temp }}/gcloud-key.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ runner.temp }}/gcloud-key.json" >> $GITHUB_ENV
       
       - name: Run BizBox collection
@@ -36,9 +38,8 @@ jobs:
       
       - name: Slack Notification - Success
         if: success()
-        uses: slackapi/slack-github-action@v1
+        uses: slackapi/slack-github-action@v1.28.0
         with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
           payload: |
             {
               "text": "✅ BizBox 지출결의 데이터 수집 완료",
@@ -47,17 +48,19 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*✅ BizBox 지출결의 데이터 수집 완료*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Time:* ${{ github.event.head_commit.timestamp }}"
+                    "text": "*✅ BizBox 지출결의 데이터 수집 완료*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
                   }
                 }
               ]
             }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
       
       - name: Slack Notification - Failure
         if: failure()
-        uses: slackapi/slack-github-action@v1
+        uses: slackapi/slack-github-action@v1.28.0
         with:
-          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
           payload: |
             {
               "text": "❌ BizBox 지출결의 데이터 수집 실패",
@@ -71,3 +74,6 @@ jobs:
                 }
               ]
             }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
