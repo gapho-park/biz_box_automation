@@ -16,7 +16,7 @@ class BizBox():
         self.bizbox_encoded_id = os.getenv("BIZBOX_ENCODED_ID")
         self.bizbox_encoded_pw = os.getenv("BIZBOX_ENCODED_PW")
         self.sheet_id = "147uYiSvi7Wl6LQbjqE2ae1nk7WjI2kUt_W-0gDxswas"
-        self.sheet_name = "지출결의"  # 시트 이름 (필요시 수정)
+        self.sheet_name = "TEST"  # 시트 이름
         
         if not self.bizbox_encoded_id or not self.bizbox_encoded_pw:
             raise ValueError("BIZBOX_ENCODED_ID, BIZBOX_ENCODED_PW is required")
