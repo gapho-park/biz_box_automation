@@ -1,10 +1,8 @@
 name: BizBox Disbursement Data Collection
-
 on:
   workflow_dispatch:
   schedule:
     - cron: '0 9 * * *'  # 매일 09:00 UTC (한국시간 18:00)
-
 jobs:
   collect-disbursement:
     runs-on: ubuntu-latest
@@ -36,39 +34,3 @@ jobs:
           BIZBOX_ENCODED_ID: ${{ secrets.BIZBOX_ENCODED_ID }}
           BIZBOX_ENCODED_PW: ${{ secrets.BIZBOX_ENCODED_PW }}
         run: python bizbox.py
-      
-      - name: Slack Notification - Success
-        if: success()
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H 'Content-type: application/json' \
-            -d '{
-              "text": "✅ BizBox 지출결의 데이터 수집 완료",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*✅ BizBox 지출결의 데이터 수집 완료*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"
-                  }
-                }
-              ]
-            }'
-      
-      - name: Slack Notification - Failure
-        if: failure()
-        run: |
-          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
-            -H 'Content-type: application/json' \
-            -d '{
-              "text": "❌ BizBox 지출결의 데이터 수집 실패",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*❌ BizBox 지출결의 데이터 수집 실패*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
-                  }
-                }
-              ]
-            }'
