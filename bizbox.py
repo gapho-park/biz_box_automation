@@ -81,6 +81,8 @@ class BizBox():
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
             'Referer': 'http://58.224.161.247/exp/ex/admin/report/ExApprovalSlipList.do?menu_no=810101500'}
         res = requests.post(url, headers=headers, data=payload, cookies=self.cookies)
+        print(f"Response Status: {res.status_code}")
+        print(f"Response Text: {res.text[:500]}")  # 처음 500자만 출력
         res.raise_for_status()
         data = res.json()
         result.extend(data['aData']['resultList']['list'])
