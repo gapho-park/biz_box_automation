@@ -74,23 +74,46 @@ class BizBox():
         page_size = 10000
         page = 1
         url = f"{self.host}/exp/ex/report/ExSlipReportExpendAdmListInfoSelect.do"
-        payload = f"page={page}&pageSize={page_size}&sortField=&sortType=&searchrepDateStartDate=20230101&searchrepDateEndDate={end_date}&searchexpendDateStartDate=19000101&searchexpendDateEndtDate=99991231&searchexpendReqDateStartDate=20240101&searchexpendReqDatendDate={end_date}&searchauthDateStartDate=19000101&searchauthDateEndDate=99991231&appUserName=&searchDocStatus=90&appDocNo=&appDocTitle=&formName=&bizCd=&erpSendYN=Y&erpSendName=&erpSendSeq=&erpUseDeptName=&erpUseEmpName=&summaryName=&authName=&projectName=&cardName=&partnerName=&acctCode=&acctName=&slipNote=&drcrGbn=cr&authNum="
+        
+        # 기본 payload - typo 수정 및 단순화
+        payload = {
+            "page": page,
+            "pageSize": page_size,
+            "searchrepDateStartDate": "20230101",
+            "searchrepDateEndDate": end_date,
+            "searchexpendDateStartDate": "19000101",
+            "searchexpendDateEndDate": "99991231",  # 오타 수정: EndtDate -> EndDate
+            "searchexpendReqDateStartDate": "20240101",
+            "searchexpendReqDateEndDate": end_date,  # 오타 수정: ndDate -> EndDate
+            "searchauthDateStartDate": "19000101",
+            "searchauthDateEndDate": "99991231",
+            "searchDocStatus": "90",
+            "erpSendYN": "Y",
+            "drcrGbn": "cr"
+        }
+        
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'host': '58.224.161.247',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Referer': 'http://58.224.161.247/exp/ex/admin/report/ExApprovalSlipList.do?menu_no=810101500'}
+            'Referer': 'http://58.224.161.247/exp/ex/admin/report/ExApprovalSlipList.do?menu_no=810101500'
+        }
+        
         res = requests.post(url, headers=headers, data=payload, cookies=self.cookies)
         print(f"Response Status: {res.status_code}")
-        print(f"Response Text: {res.text[:500]}")  # 처음 500자만 출력
+        if res.status_code != 200:
+            print(f"Response Text: {res.text[:500]}")
         res.raise_for_status()
+        
         data = res.json()
         result.extend(data['aData']['resultList']['list'])
         total_pages = math.ceil(data['aData']['resultList']['totalCount'] / page_size)
 
         for page in range(2, total_pages + 1):
             time.sleep(3)
-            payload = f"page={page}&pageSize={page_size}&sortField=&sortType=&searchrepDateStartDate=20230101&searchrepDateEndDate={end_date}&searchexpendDateStartDate=19000101&searchexpendDateEndtDate=99991231&searchexpendReqDateStartDate=20240101&searchexpendReqDatendDate={end_date}&searchauthDateStartDate=19000101&searchauthDateEndDate=99991231&appUserName=&searchDocStatus=90&appDocNo=&appDocTitle=&formName=&bizCd=&erpSendYN=A&erpSendName=&erpSendSeq=&erpUseDeptName=&erpUseEmpName=&summaryName=&authName=&projectName=&cardName=&partnerName=&acctCode=&acctName=&slipNote=&drcrGbn=A&authNum="
+            payload['page'] = page
+            payload['erpSendYN'] = 'A'
+            payload['drcrGbn'] = 'A'
             res = requests.post(url, headers=headers, data=payload, cookies=self.cookies)
             data = res.json()
             res.raise_for_status()
