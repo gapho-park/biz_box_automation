@@ -66,6 +66,8 @@ class BizBox():
             cookies = requests.utils.dict_from_cookiejar(response.cookies)
         self.cookies = cookies
         print(f"Login cookies: {self.cookies}")
+        print(f"All cookies after login: {dict(response.cookies)}")
+        print(f"Response headers: {response.headers}")
 
     def get_disbursement_document(self):
         result = []
@@ -99,6 +101,7 @@ class BizBox():
             'Referer': 'http://58.224.161.247/exp/ex/admin/report/ExApprovalSlipList.do?menu_no=810101500'
         }
         
+        print(f"Cookies before API request: {self.cookies}")
         res = requests.post(url, headers=headers, data=payload, cookies=self.cookies)
         print(f"Response Status: {res.status_code}")
         if res.status_code != 200:
