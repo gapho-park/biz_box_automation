@@ -59,9 +59,13 @@ class BizBox():
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
         }
 
-        response = requests.post(url, headers=headers, data=data)
-        cookies = requests.utils.dict_from_cookiejar(response.history[0].cookies)
+        response = requests.post(url, headers=headers, data=data, allow_redirects=True)
+        if response.history:
+            cookies = requests.utils.dict_from_cookiejar(response.history[0].cookies)
+        else:
+            cookies = requests.utils.dict_from_cookiejar(response.cookies)
         self.cookies = cookies
+        print(f"Login cookies: {self.cookies}")
 
     def get_disbursement_document(self):
         result = []
