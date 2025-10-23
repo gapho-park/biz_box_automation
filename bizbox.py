@@ -1,0 +1,73 @@
+name: BizBox Disbursement Data Collection
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'  # 매일 09:00 UTC (한국시간 18:00)
+
+jobs:
+  collect-disbursement:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Set up Google Cloud credentials
+        run: |
+          echo "${{ secrets.GOOGLE_CLOUD_KEY }}" > ${{ runner.temp }}/gcloud-key.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ runner.temp }}/gcloud-key.json" >> $GITHUB_ENV
+      
+      - name: Run BizBox collection
+        env:
+          BIZBOX_ENCODED_ID: ${{ secrets.BIZBOX_ENCODED_ID }}
+          BIZBOX_ENCODED_PW: ${{ secrets.BIZBOX_ENCODED_PW }}
+        run: python bizbox.py
+      
+      - name: Slack Notification - Success
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "✅ BizBox 지출결의 데이터 수집 완료",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*✅ BizBox 지출결의 데이터 수집 완료*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Time:* ${{ github.event.head_commit.timestamp }}"
+                  }
+                }
+              ]
+            }
+      
+      - name: Slack Notification - Failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "❌ BizBox 지출결의 데이터 수집 실패",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*❌ BizBox 지출결의 데이터 수집 실패*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>\n*Action:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>"
+                  }
+                }
+              ]
+            }
